@@ -1,5 +1,7 @@
+import { StatesEnum } from "./states.enum";
+
 class MonoSymbolAutomata {
-    private state: string = 'START';
+    private state: StatesEnum = StatesEnum.START;
     private symbol: string;
 
     constructor(symbol: string) {
@@ -12,7 +14,7 @@ class MonoSymbolAutomata {
         for (const char of word) {
             this.applyTransitions(char);
 
-            if (this.state === 'FINISH') {
+            if (this.state === StatesEnum.FINISH) {
                 return subWordSize;
             }
 
@@ -21,12 +23,12 @@ class MonoSymbolAutomata {
     }
 
     private applyTransitions(char: string) {
-        if (this.state === 'SYMBOL' || char !== this.symbol) {
-            this.state = 'FINISH';
+        if (this.state === StatesEnum.SYMBOL || char !== this.symbol) {
+            this.state = StatesEnum.FINISH;
             return;
         }
 
-        this.state = 'SYMBOL';
+        this.state = StatesEnum.SYMBOL;
     }
 
 }

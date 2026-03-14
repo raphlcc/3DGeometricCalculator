@@ -1,8 +1,8 @@
-const ALPHABET = 'abcdefghijklmnopqrstuvwxyz';
-const DIGITS = '0123456789';
+import { StatesEnum } from "./states.enum";
+import { DIGITS, ALPHABET } from "./constants";
 
 class IdentifierAutomata {
-    private state: string = 'START';
+    private state: StatesEnum = StatesEnum.START;
 
     recognize(word: string) {
         let subWordSize = 0;
@@ -10,7 +10,7 @@ class IdentifierAutomata {
         for (const char of word) {
             this.applyTransitions(char);
 
-            if (this.state === 'FINISH') {
+            if (this.state === StatesEnum.FINISH) {
                 return subWordSize;
             }
 
@@ -19,15 +19,15 @@ class IdentifierAutomata {
     }
 
     private applyTransitions(char: string) {
-        if (this.state === 'START' && ALPHABET.includes(char)) {
-            this.state = 'IDENTIFIER';
+        if (this.state === StatesEnum.START && ALPHABET.includes(char)) {
+            this.state = StatesEnum.IDENTIFIER;
         }
 
-        if (this.state === 'IDENTIFIER' && (DIGITS.includes(char) || ALPHABET.includes(char))) {
+        if (this.state === StatesEnum.IDENTIFIER && (DIGITS.includes(char) || ALPHABET.includes(char))) {
             return;
         }
 
-        this.state = 'FINISH';
+        this.state = StatesEnum.FINISH;
     }
 
 }

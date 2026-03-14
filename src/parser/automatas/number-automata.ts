@@ -1,5 +1,8 @@
+import { StatesEnum } from "./states.enum";
+import { DIGITS } from "./constants";
+
 class NumberAutomata {
-    private state: string = 'START';
+    private state: StatesEnum = StatesEnum.START;
 
     recognize(word: string) {
         let subWordSize = 0;
@@ -7,7 +10,7 @@ class NumberAutomata {
         for (const char of word) {
             this.applyTransitions(char);
 
-            if (this.state === 'FINISH') {
+            if (this.state === StatesEnum.FINISH) {
                 return subWordSize;
             }
 
@@ -19,8 +22,8 @@ class NumberAutomata {
         if (DIGITS.includes(char) || char === '.') {
             return;
         }
-    
-        this.state = 'FINISH';
+
+        this.state = StatesEnum.FINISH;
     }
 
 }
