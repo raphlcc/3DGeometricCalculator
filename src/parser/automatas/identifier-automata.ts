@@ -1,24 +1,14 @@
 import { StatesEnum } from "./states.enum";
 import { DIGITS, ALPHABET } from "./constants";
+import { Automata } from "./automata";
 
-class IdentifierAutomata {
-    private state: StatesEnum = StatesEnum.START;
+export default class IdentifierAutomata extends Automata {
 
-    recognize(word: string) {
-        let subWordSize = 0;
-
-        for (const char of word) {
-            this.applyTransitions(char);
-
-            if (this.state === StatesEnum.FINISH) {
-                return subWordSize;
-            }
-
-            subWordSize++;
-        }
+    constructor() {
+        super('IDENTIFIER');
     }
 
-    private applyTransitions(char: string) {
+    protected applyTransitions(char: string): void {
         if (this.state === StatesEnum.START && ALPHABET.includes(char)) {
             this.state = StatesEnum.IDENTIFIER;
         }

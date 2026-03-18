@@ -1,28 +1,16 @@
+import { Automata } from "./automata";
 import { StatesEnum } from "./states.enum";
+import { Token } from "./token.interface";
 
-class MonoSymbolAutomata {
-    private state: StatesEnum = StatesEnum.START;
+export default class MonoSymbolAutomata extends Automata {
     private symbol: string;
 
-    constructor(symbol: string) {
+    constructor(symbol: string, tokenName: string) {
+        super(tokenName);
         this.symbol = symbol;
     }
 
-    recognize(word: string) {
-        let subWordSize = 0;
-
-        for (const char of word) {
-            this.applyTransitions(char);
-
-            if (this.state === StatesEnum.FINISH) {
-                return subWordSize;
-            }
-
-            subWordSize++;
-        }
-    }
-
-    private applyTransitions(char: string) {
+    protected applyTransitions(char: string): void {
         if (this.state === StatesEnum.SYMBOL || char !== this.symbol) {
             this.state = StatesEnum.FINISH;
             return;
