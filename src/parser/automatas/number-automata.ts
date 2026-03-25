@@ -9,9 +9,20 @@ export default class NumberAutomata extends Automata {
     }
 
     protected applyTransitions(char: string): void {
-        if (DIGITS.includes(char) || char === '.') {
+        if (this.state === StatesEnum.START && DIGITS.includes(char)) {
+            this.state = StatesEnum.INTEGER;
             return;
         }
+
+        if (this.state === StatesEnum.INTEGER && char === '.') {
+            this.state = StatesEnum.FLOAT;
+            return;
+        }
+
+        if ((this.state === StatesEnum.FLOAT || this.state === StatesEnum.INTEGER) && DIGITS.includes(char)) {
+            return;
+        }
+
         this.state = StatesEnum.FINISH;
     }
 
