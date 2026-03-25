@@ -21,6 +21,8 @@ export abstract class Automata {
             size++;
         }
 
+        this.state = StatesEnum.START;
+
         const substring = word.slice(0, size);
         return { name: this.tokenName, substring, size };
     }
