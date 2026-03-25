@@ -2,6 +2,7 @@ export enum StatesEnum {
     START,
     FINISH,
     IDENTIFIER,
-    NUMBER,
+    INTEGER,
+    FLOAT,
     SYMBOL,
 }
