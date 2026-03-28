@@ -15,6 +15,25 @@ describe("NumberAutomata", () => {
         });
     });
 
+    it('recognizes two numbers consecutively', () => {
+        const automata = new NumberAutomata();
+
+        const token1 = automata.recognize("123 456");
+        const token2 = automata.recognize("456");
+
+        expect(token1).toEqual({
+            name: "NUMBER",
+            substring: "123",
+            size: 3
+        });
+
+        expect(token2).toEqual({
+            name: "NUMBER",
+            substring: "456",
+            size: 3
+        });
+    });
+
     it("recognizes a float", () => {
         const automata = new NumberAutomata();
 
