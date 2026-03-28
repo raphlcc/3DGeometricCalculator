@@ -6,22 +6,18 @@ import NumberAutomata from "./automatas/number-automata";
 
 export default class Lexer {
 
-    automatas: Automata[] = [];
-
-    constructor() {
-        this.automatas.push(
-            new IdentifierAutomata(),
-            new NumberAutomata(),
-            new MonoSymbolAutomata('+', 'PLUS'),
-            new MonoSymbolAutomata('-', 'MINUS'),
-            new MonoSymbolAutomata('*', 'TIMES'),
-            new MonoSymbolAutomata('(', 'L_PAREN'),
-            new MonoSymbolAutomata(')', 'R_PAREN'),
-            new MonoSymbolAutomata('=', 'EQUAL'),
-            new MonoSymbolAutomata(',', 'COMMA'),
-            new MonoSymbolAutomata(' ', 'SPACE'),
-        );
-    }
+    private automatas: Automata[] = [
+        new IdentifierAutomata(),
+        new NumberAutomata(),
+        new MonoSymbolAutomata('+', 'PLUS'),
+        new MonoSymbolAutomata('-', 'MINUS'),
+        new MonoSymbolAutomata('*', 'TIMES'),
+        new MonoSymbolAutomata('(', 'L_PAREN'),
+        new MonoSymbolAutomata(')', 'R_PAREN'),
+        new MonoSymbolAutomata('=', 'EQUAL'),
+        new MonoSymbolAutomata(',', 'COMMA'),
+        new MonoSymbolAutomata(' ', 'SPACE'),
+    ];
 
     lexemize(word: string) {
         const tokens: Token[] = [];
@@ -29,31 +25,33 @@ export default class Lexer {
         let wordToProcess = word;
 
         while (wordToProcess !== '') {
-            let generatedSomeToken = false;
-
-            for (const automata of this.automatas) {
-                const token = automata.recognize(wordToProcess);
-
-                if (token.size === 0) {
-                    continue;
-                }
-                generatedSomeToken = true;
-
-                if (token.name === "SPACE") {
-                    continue;
-                }
-
-                tokens.push(token);
-                wordToProcess = wordToProcess.slice(token.size, word.length);
+            const token = this.firstRecognizedToken(wordToProcess);
+            
+            if (token.name === "UNRECOGNIZED") {
+                throw new Error(`Unrecognized token at: ${wordToProcess}`);
             }
 
-            if (!generatedSomeToken) {
-                throw new SyntaxError(
-                `Unrecognized token "${wordToProcess.slice(0, 10)}"`
-                );
+            wordToProcess = wordToProcess.slice(token.size, word.length);
+
+            if (token.name === "SPACE") {
+                continue;
             }
+            tokens.push(token);
         }
-        
+
+        return tokens;
     }
+    
+    firstRecognizedToken(word: string) {
+        for (const automata of this.automatas) {
+            const token = automata.recognize(word);
+
+            if (token.size > 0) {
+                return token;
+            }                
+        }
+
+        return { name: "UNRECOGNIZED", substring: "", size: 0 };
+    }   
 
 }
