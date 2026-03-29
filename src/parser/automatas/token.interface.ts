@@ -1,5 +1,13 @@
+/**
+ * Represents a lexical token produced by the lexer.
+ */
 export interface Token {
-    name: string;
-    substring: string;
-    size: number;
+  /** Token type identifier */
+  name: string;
+
+  /** Matched substring from input */
+  substring: string;
+
+  /** Length of consumed characters */
+  size: number;
 }
