@@ -1,8 +1,8 @@
 export enum StatesEnum {
-    START,
-    FINISH,
-    IDENTIFIER,
-    INTEGER,
-    FLOAT,
-    SYMBOL,
+  START,
+  FINISH,
+  IDENTIFIER,
+  INTEGER,
+  FLOAT,
+  SYMBOL,
 }
