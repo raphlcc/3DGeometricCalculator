@@ -1,8 +1,8 @@
-import { Token } from "./automatas/token.interface";
-import { Automata } from "./automatas/automata";
-import IdentifierAutomata from "./automatas/identifier-automata";
-import MonoSymbolAutomata from "./automatas/monosymbol-automata";
-import NumberAutomata from "./automatas/number-automata";
+import { Token } from "./automata/token.interface";
+import { Automaton } from "./automata/automaton";
+import IdentifierAutomaton from "./automata/identifier-automaton";
+import MonoSymbolAutomaton from "./automata/monosymbol-automaton";
+import NumberAutomaton from "./automata/number-automaton";
 
 /**
  * Lexer class responsible for tokenizing input strings based on a set of
@@ -34,17 +34,17 @@ import NumberAutomata from "./automatas/number-automata";
  * @throws Error if an unrecognized token is found in the input string.
  */
 export default class Lexer {
-  private automatas: Automata[] = [
-    new IdentifierAutomata(),
-    new NumberAutomata(),
-    new MonoSymbolAutomata("+", "PLUS"),
-    new MonoSymbolAutomata("-", "MINUS"),
-    new MonoSymbolAutomata("*", "TIMES"),
-    new MonoSymbolAutomata("(", "L_PAREN"),
-    new MonoSymbolAutomata(")", "R_PAREN"),
-    new MonoSymbolAutomata("=", "EQUAL"),
-    new MonoSymbolAutomata(",", "COMMA"),
-    new MonoSymbolAutomata(" ", "SPACE"),
+  private automata: Automaton[] = [
+    new IdentifierAutomaton(),
+    new NumberAutomaton(),
+    new MonoSymbolAutomaton("+", "PLUS"),
+    new MonoSymbolAutomaton("-", "MINUS"),
+    new MonoSymbolAutomaton("*", "TIMES"),
+    new MonoSymbolAutomaton("(", "L_PAREN"),
+    new MonoSymbolAutomaton(")", "R_PAREN"),
+    new MonoSymbolAutomaton("=", "EQUAL"),
+    new MonoSymbolAutomaton(",", "COMMA"),
+    new MonoSymbolAutomaton(" ", "SPACE"),
   ];
 
   /***
@@ -82,15 +82,15 @@ export default class Lexer {
    * available automata.
    *
    * Try to recognize a subword of the input string using the available automata,
-   * returning the first valid token found. If no automata recognize a valid
+   * returning the first valid token found. If no automaton recognize a valid
    * token, an UNRECOGNIZED token is returned.
    *
    * @param word The input string to analyze.
    * @returns The first recognized token, or an UNRECOGNIZED token if none match.
    */
   firstRecognizedToken(word: string) {
-    for (const automata of this.automatas) {
-      const token = automata.recognize(word);
+    for (const automaton of this.automata) {
+      const token = automaton.recognize(word);
 
       if (token.size > 0) {
         return token;

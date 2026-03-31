@@ -1,6 +1,6 @@
 import { StatesEnum } from "./states.enum";
 import { DIGITS } from "./constants";
-import { Automata } from "./automata";
+import { Automaton } from "./automaton";
 
 /**
  * Deterministic finite automaton responsible for recognizing the first
@@ -20,7 +20,7 @@ import { Automata } from "./automata";
  * - integers (e.g., 10)
  * - floating-point numbers (e.g., 10.5)
  */
-export default class NumberAutomata extends Automata {
+export default class NumberAutomaton extends Automaton {
   constructor() {
     super("NUMBER");
   }

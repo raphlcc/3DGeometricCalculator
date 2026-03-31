@@ -13,7 +13,7 @@ import { Token } from "./token.interface";
  * Subclasses must implement the transition function by defining how the
  * automaton state evolves for each consumed character.
  */
-export abstract class Automata {
+export abstract class Automaton {
   protected state: StatesEnum = StatesEnum.START;
   private tokenName: string;
 

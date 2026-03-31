@@ -1,11 +1,11 @@
 import { describe, it, expect } from "vitest";
-import MonoSymbolAutomata from "./monosymbol-automata";
+import MonoSymbolAutomaton from "./monosymbol-automaton";
 
-describe("MonoSymbolAutomata", () => {
+describe("MonoSymbolAutomaton", () => {
   it("recognizes single symbol", () => {
-    const automata = new MonoSymbolAutomata("+", "PLUS");
+    const automaton = new MonoSymbolAutomaton("+", "PLUS");
 
-    const token = automata.recognize("+");
+    const token = automaton.recognize("+");
 
     expect(token).toEqual({
       name: "PLUS",
@@ -15,18 +15,18 @@ describe("MonoSymbolAutomata", () => {
   });
 
   it("does not consume second same symbol", () => {
-    const automata = new MonoSymbolAutomata("+", "PLUS");
+    const automaton = new MonoSymbolAutomaton("+", "PLUS");
 
-    const token = automata.recognize("++");
+    const token = automaton.recognize("++");
 
     expect(token.substring).toBe("+");
     expect(token.size).toBe(1);
   });
 
   it("rejects different symbol", () => {
-    const automata = new MonoSymbolAutomata("+", "PLUS");
+    const automaton = new MonoSymbolAutomaton("+", "PLUS");
 
-    const token = automata.recognize("-");
+    const token = automaton.recognize("-");
 
     expect(token.substring).toBe("");
     expect(token.size).toBe(0);

@@ -1,10 +1,10 @@
 import { describe, it, expect } from "vitest";
 import Lexer from "./lexer";
-import { Automata } from "./automatas/automata";
-import { Token } from "./automatas/token.interface";
+import { Automaton } from "./automata/automaton";
+import { Token } from "./automata/token.interface";
 import { vi } from "vitest";
 
-class MockAutomata extends Automata {
+class MockAutomaton extends Automaton {
   constructor(private token: Token) {
     super(token.name);
   }
@@ -26,10 +26,10 @@ describe("Lexer", () => {
     it("returns first recognized token", () => {
       const lexer = new Lexer();
 
-      lexer["automatas"] = [
-        new MockAutomata({ name: "EMPTY", substring: "", size: 0 }),
-        new MockAutomata({ name: "IDENTIFIER", substring: "f", size: 1 }),
-        new MockAutomata({ name: "NUMBER", substring: "123", size: 3 }),
+      lexer["automata"] = [
+        new MockAutomaton({ name: "EMPTY", substring: "", size: 0 }),
+        new MockAutomaton({ name: "IDENTIFIER", substring: "f", size: 1 }),
+        new MockAutomaton({ name: "NUMBER", substring: "123", size: 3 }),
       ];
 
       const token = lexer.firstRecognizedToken("f");
@@ -44,9 +44,9 @@ describe("Lexer", () => {
     it("returns UNRECOGNIZED when none match", () => {
       const lexer = new Lexer();
 
-      lexer["automatas"] = [
-        new MockAutomata({ name: "EMPTY", substring: "", size: 0 }),
-        new MockAutomata({ name: "EMPTY", substring: "", size: 0 }),
+      lexer["automata"] = [
+        new MockAutomaton({ name: "EMPTY", substring: "", size: 0 }),
+        new MockAutomaton({ name: "EMPTY", substring: "", size: 0 }),
       ];
 
       const token = lexer.firstRecognizedToken("???");
@@ -61,9 +61,9 @@ describe("Lexer", () => {
     it("stops at first match", () => {
       const lexer = new Lexer();
 
-      lexer["automatas"] = [
-        new MockAutomata({ name: "IDENTIFIER", substring: "f", size: 1 }),
-        new MockAutomata({ name: "NUMBER", substring: "123", size: 3 }),
+      lexer["automata"] = [
+        new MockAutomaton({ name: "IDENTIFIER", substring: "f", size: 1 }),
+        new MockAutomaton({ name: "NUMBER", substring: "123", size: 3 }),
       ];
 
       const token = lexer.firstRecognizedToken("f");

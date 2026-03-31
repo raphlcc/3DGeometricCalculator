@@ -1,6 +1,6 @@
 import { StatesEnum } from "./states.enum";
 import { DIGITS, ALPHABET } from "./constants";
-import { Automata } from "./automata";
+import { Automaton } from "./automaton";
 
 /**
  * Deterministic finite automaton responsible for recognizing identifier
@@ -20,7 +20,7 @@ import { Automata } from "./automata";
  * Accepted format:
  * - identifiers starting with a letter followed by letters or digits
  */
-export default class IdentifierAutomata extends Automata {
+export default class IdentifierAutomaton extends Automaton {
   constructor() {
     super("IDENTIFIER");
   }

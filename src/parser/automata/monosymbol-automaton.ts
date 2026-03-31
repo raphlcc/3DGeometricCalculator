@@ -1,4 +1,4 @@
-import { Automata } from "./automata";
+import { Automaton } from "./automaton";
 import { StatesEnum } from "./states.enum";
 
 /**
@@ -22,7 +22,7 @@ import { StatesEnum } from "./states.enum";
  * - a different character is read
  * - the symbol has already been consumed
  */
-export default class MonoSymbolAutomata extends Automata {
+export default class MonoSymbolAutomata extends Automaton {
   private symbol: string;
 
   constructor(symbol: string, tokenName: string) {
