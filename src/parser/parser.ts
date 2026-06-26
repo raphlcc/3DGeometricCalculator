@@ -30,9 +30,13 @@ type Accept = {
 
 type Action = Shift | Reduce | Accept;
 
+type StackNode = {
+  state: number;
+  value?: Token | MathObject;
+};
+
 class Parser {
-  private stack: number[];
-  private position: number;
+  private stack: StackNode[];
 
   private grammar: Grammar;
   private firstProduction: Production;
@@ -48,12 +52,12 @@ class Parser {
         kind: "non-terminal",
       },
       right: [grammar.startSymbol],
+      reduce: () => {},
     };
     this.firstProduction.left.produtions = [this.firstProduction];
 
-    const firstStateId = 0;
-    this.stack = [firstStateId];
-    this.position = 0;
+    const firstState = { state: 0 };
+    this.stack = [firstState];
 
     const automaton = this.buildCanonicalSetsAutomaton();
     this.buildActionsTable(automaton);
@@ -63,6 +67,13 @@ class Parser {
   public parse(tokens: Token[]): void {
     let currAction: Action | undefined;
 
+    const endToken: Token = {
+      name: "end-marker",
+      substring: "",
+      size: 0,
+    };
+    tokens.push(endToken);
+
     do {
       const token = tokens.shift();
       const top = this.stack.pop();
@@ -70,12 +81,21 @@ class Parser {
       currAction = this.actions.get(`${top}#${token?.name}`);
 
       if (currAction?.kind === "shift") {
-        this.stack.push(currAction.state);
+        const nextState = {
+          state: currAction.state,
+          value: token,
+        };
+
+        this.stack.push(nextState);
         continue;
       }
 
       if (currAction?.kind === "reduce") {
-        // TODO: reduce logic
+        const removeCount = currAction.production.right.length;
+        const removedStates = this.stack.splice(-removeCount);
+        const mathObjects = removedStates.map((stackNode) => stackNode.value);
+        currAction.production.reduce(mathObjects);
+
         continue;
       }
 
