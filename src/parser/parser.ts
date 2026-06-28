@@ -75,12 +75,20 @@ class Parser {
     tokens.push(endToken);
 
     do {
-      const token = tokens.shift();
+      const token = tokens[0];
       const top = this.stack.pop();
 
-      currAction = this.actions.get(`${top}#${token?.name}`);
+      currAction = this.actions.get(`${top?.state}#${token?.name}`);
+
+      if (!currAction) {
+        throw new Error(
+          `There is no action to key ${top?.state}#${token?.name}.`,
+        );
+      }
 
       if (currAction?.kind === "shift") {
+        tokens.shift();
+
         const nextState = {
           state: currAction.state,
           value: token,
@@ -91,10 +99,20 @@ class Parser {
       }
 
       if (currAction?.kind === "reduce") {
-        const removeCount = currAction.production.right.length;
-        const removedStates = this.stack.splice(-removeCount);
+        const removedStates = this.stack.splice(
+          -currAction.production.right.length,
+        );
         const mathObjects = removedStates.map((stackNode) => stackNode.value);
-        currAction.production.reduce(mathObjects);
+        const astNode = currAction.production.reduce(mathObjects);
+        const newStateId = this.goto.get(
+          `${top?.state}#${currAction.production.left.name}`,
+        );
+
+        const stackNode: StackNode = {
+          state: newStateId!,
+          value: astNode,
+        };
+        this.stack.push(stackNode);
 
         continue;
       }
