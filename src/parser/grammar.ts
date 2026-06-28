@@ -1,4 +1,9 @@
-import { MathObject } from "../math/math-object";
+import {
+  MathObject,
+  Function as FunctionType,
+  Constraint as ConstraintType,
+} from "../math/math-object";
+import { Expression as ExpressionType, Vec } from "../math/expression";
 import { Token } from "./automata/token.interface";
 
 export type Terminal = {
@@ -12,10 +17,18 @@ export type NonTerminal = {
 };
 export type Symbol = Terminal | NonTerminal;
 
+export type ReduceArgs = (
+  | MathObject
+  | MathObject[]
+  | Token
+  | string
+  | undefined
+)[];
+
 export type Production = {
   left: NonTerminal;
   right: Symbol[];
-  reduce: (items: (MathObject | Token | undefined)[]) => void;
+  reduce: (items: ReduceArgs) => any;
 };
 
 export const EPSILON: Terminal = {
@@ -38,9 +51,9 @@ const Function: NonTerminal = {
   name: "function",
 };
 
-const EqIneq: NonTerminal = {
+const Constraint: NonTerminal = {
   kind: "non-terminal",
-  name: "eq-ineq",
+  name: "constraint",
 };
 
 const CompareOperator: NonTerminal = {
@@ -73,19 +86,24 @@ const Expression: NonTerminal = {
   name: "expr",
 };
 
-const BinaryExpression: NonTerminal = {
+const Term: NonTerminal = {
   kind: "non-terminal",
-  name: "bin-expr",
+  name: "term",
 };
 
-const BinaryOperator: NonTerminal = {
+const Factor: NonTerminal = {
   kind: "non-terminal",
-  name: "bin-op",
+  name: "factor",
 };
 
-const UnaryExpression: NonTerminal = {
+const Expo: NonTerminal = {
   kind: "non-terminal",
-  name: "unary-expr",
+  name: "expo",
+};
+
+const Base: NonTerminal = {
+  kind: "non-terminal",
+  name: "base",
 };
 
 const TupleExpression: NonTerminal = {
@@ -199,16 +217,17 @@ export default class Grammar {
     this.symbols = [
       MathObj,
       Function,
-      EqIneq,
+      Constraint,
       CompareOperator,
       FuncDecl,
       Name,
       VarList,
       Var,
       Expression,
-      BinaryExpression,
-      BinaryOperator,
-      UnaryExpression,
+      Term,
+      Factor,
+      Expo,
+      Base,
       TupleExpression,
       ExpressionList,
       CallFunctionExpression,
@@ -232,27 +251,88 @@ export default class Grammar {
     ];
 
     this.productions = [
-      // <math_obj> ::= <function> | <eq_ineq>
-      { left: MathObj, right: [Function], reduce: () => {} },
-      { left: MathObj, right: [EqIneq], reduce: () => {} },
-      // <eq_ineq> ::= <expr> <comp_op> <expr>
+      // <math_obj> ::= <function> | <constraint>
       {
-        left: EqIneq,
-        right: [Expression, CompareOperator, Expression],
-        reduce: () => {},
+        left: MathObj,
+        right: [Function],
+        reduce: (items) => items[0],
       },
-      // <comp_op> ::= != | == | < | > | <= | >=
-      { left: CompareOperator, right: [DIFFERENT], reduce: () => {} },
-      { left: CompareOperator, right: [EQUAL], reduce: () => {} },
-      { left: CompareOperator, right: [LESS_THAN], reduce: () => {} },
-      { left: CompareOperator, right: [GREATER_THAN], reduce: () => {} },
-      { left: CompareOperator, right: [LESS_EQUAL], reduce: () => {} },
-      { left: CompareOperator, right: [GREATER_EQUAL], reduce: () => {} },
+      {
+        left: MathObj,
+        right: [Constraint],
+        reduce: (items) => items[0],
+      },
+      // <constraint> ::= <expr> = <expr>
+      {
+        left: Constraint,
+        right: [Expression, EQUAL, Expression],
+        reduce: (items) =>
+          new ConstraintType(
+            items[0] as ExpressionType,
+            "=",
+            items[2] as ExpressionType,
+          ),
+      },
+      // <constraint> ::= <expr> != <expr>
+      {
+        left: Constraint,
+        right: [Expression, DIFFERENT, Expression],
+        reduce: (items) =>
+          new ConstraintType(
+            items[0] as ExpressionType,
+            "!=",
+            items[2] as ExpressionType,
+          ),
+      },
+      // <constraint> ::= <expr> < <expr>
+      {
+        left: Constraint,
+        right: [Expression, LESS_THAN, Expression],
+        reduce: (items) =>
+          new ConstraintType(
+            items[0] as ExpressionType,
+            "<",
+            items[2] as ExpressionType,
+          ),
+      },
+      // <constraint> ::= <expr> <= <expr>
+      {
+        left: Constraint,
+        right: [Expression, LESS_EQUAL, Expression],
+        reduce: (items) =>
+          new ConstraintType(
+            items[0] as ExpressionType,
+            "<=",
+            items[2] as ExpressionType,
+          ),
+      },
+      // <constraint> ::= <expr> > <expr>
+      {
+        left: Constraint,
+        right: [Expression, GREATER_THAN, Expression],
+        reduce: (items) =>
+          new ConstraintType(
+            items[0] as ExpressionType,
+            ">",
+            items[2] as ExpressionType,
+          ),
+      },
+      // <constraint> ::= <expr> >= <expr>
+      {
+        left: Constraint,
+        right: [Expression, GREATER_EQUAL, Expression],
+        reduce: (items) =>
+          new ConstraintType(
+            items[0] as ExpressionType,
+            ">=",
+            items[2] as ExpressionType,
+          ),
+      },
       // <function> ::= <func_decl> = <expr>
       {
         left: Function,
         right: [FuncDecl, EQUAL, Expression],
-        reduce: () => {},
+        reduce: (items) => {},
       },
       // <func_decl> ::= <name> ( <var_list> )
       {
@@ -269,40 +349,27 @@ export default class Grammar {
       { left: VarList, right: [Var, COMMA, VarList], reduce: () => {} },
       // <var> ::= <Name>
       { left: Var, right: [Name], reduce: () => {} },
-      /**
-        <expr> ::= <binary_expr>
-				 | <unary_expr>
-				 | <tuple_expr>
-				 | <call_func_expr>
-				 | (<expr>)
-				 | <var>
-				 | NUMBER
-       */
-      { left: Expression, right: [BinaryExpression], reduce: () => {} },
-      { left: Expression, right: [UnaryExpression], reduce: () => {} },
-      { left: Expression, right: [TupleExpression], reduce: () => {} },
-      { left: Expression, right: [CallFunctionExpression], reduce: () => {} },
-      {
-        left: Expression,
-        right: [L_PAREN, Expression, R_PAREN],
-        reduce: () => {},
-      },
-      { left: Expression, right: [Var], reduce: () => {} },
-      { left: Expression, right: [NUMBER], reduce: () => {} },
-      // <binary_expr> ::= <expr> <bin_op> <expr>
-      {
-        left: BinaryExpression,
-        right: [Expression, BinaryOperator, Expression],
-        reduce: () => {},
-      },
-      // <bin_op> ::= + | - | * | / | ^
-      { left: BinaryOperator, right: [PLUS], reduce: () => {} },
-      { left: BinaryOperator, right: [MINUS], reduce: () => {} },
-      { left: BinaryOperator, right: [TIMES], reduce: () => {} },
-      { left: BinaryOperator, right: [SLASH], reduce: () => {} },
-      { left: BinaryOperator, right: [POWER], reduce: () => {} },
-      // <unary_expr> ::= - <expr>
-      { left: UnaryExpression, right: [MINUS, Expression], reduce: () => {} },
+      // <expr> ::= <term> + <expr> | <term> - <expr> | <term>
+      { left: Expression, right: [Term, PLUS, Expression], reduce: () => {} },
+      { left: Expression, right: [Term, MINUS, Expression], reduce: () => {} },
+      { left: Expression, right: [Term], reduce: () => {} },
+      // <term> ::= <factor> * <term> | <factor> / <term> | <factor>
+      { left: Term, right: [Factor, TIMES, Term], reduce: () => {} },
+      { left: Term, right: [Factor, SLASH, Term], reduce: () => {} },
+      { left: Term, right: [Factor], reduce: () => {} },
+      // <factor> ::= <exp> | -<exp>
+      { left: Factor, right: [Expo], reduce: () => {} },
+      { left: Factor, right: [MINUS, Expo], reduce: () => {} },
+      // <exp> ::= <base> ^ <exp> | <base> ^ -<exp> | <base> | (<expr>)
+      { left: Expo, right: [Base, POWER, Expo], reduce: () => {} },
+      { left: Expo, right: [Base, POWER, MINUS, Expo], reduce: () => {} },
+      { left: Expo, right: [Base], reduce: () => {} },
+      { left: Expo, right: [L_PAREN, Expression, R_PAREN], reduce: () => {} },
+      // <base> ::= <var> | NUMBER | <call_func_expr> | <tuple_expr>
+      { left: Base, right: [Var], reduce: () => {} },
+      { left: Base, right: [NUMBER], reduce: () => {} },
+      { left: Base, right: [CallFunctionExpression], reduce: () => {} },
+      { left: Base, right: [TupleExpression], reduce: () => {} },
       // <tuple_expr> ::= (<expr_list>)
       {
         left: TupleExpression,
@@ -310,11 +377,15 @@ export default class Grammar {
         reduce: () => {},
       },
       // <expr_list> ::= <expr> | <expr> , <expr_list>
-      { left: ExpressionList, right: [Expression], reduce: () => {} },
+      {
+        left: ExpressionList,
+        right: [Expression],
+        reduce: (items) => [items[0]],
+      },
       {
         left: ExpressionList,
         right: [Expression, COMMA, ExpressionList],
-        reduce: () => {},
+        reduce: (items) => [items[0], ...(items[2] as ExpressionType[])],
       },
       // <call_func_expr> ::= <name> (<expr_list)
       {
