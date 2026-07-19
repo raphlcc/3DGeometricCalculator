@@ -394,5 +394,15 @@ export default class Grammar {
         reduce: () => {},
       },
     ];
+
+    for (const symbol of this.symbols) {
+      if (symbol.kind === "terminal") {
+        continue;
+      }
+
+      symbol.produtions = this.productions.filter(
+        (production) => production.left === symbol,
+      );
+    }
   }
 }
