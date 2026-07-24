@@ -364,19 +364,19 @@ class Parser {
     let first = new Set<Terminal>();
 
     for (const production of nonTerminal.produtions) {
-      let symbolIndex = 0;
-      let currFirst;
-
-      do {
-        const currSymbol = production.right[symbolIndex];
+      for (const currSymbol of production.right) {
         if (currSymbol.kind === "terminal") {
-          first.add(production.right[symbolIndex] as Terminal);
+          first.add(currSymbol as Terminal);
           break;
         }
-        currFirst = this.firstToSingle(currSymbol);
-        first = new Set<Terminal>([...first, ...currFirst]);
-        symbolIndex++;
-      } while (currFirst.has(EPSILON));
+
+        const currFirst = this.firstToSingle(currSymbol);
+        first = first.union(currFirst);
+
+        if (currFirst.has(EPSILON)) {
+          break;
+        }
+      }
     }
 
     return first;
