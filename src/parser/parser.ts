@@ -296,29 +296,32 @@ class Parser {
   }
 
   follow(nonTerminal: NonTerminal): Set<Terminal> {
-    if (nonTerminal === this.grammar.startSymbol) {
-      return new Set<Terminal>([END_MARKER]);
-    }
-
     let follow = new Set<Terminal>();
 
-    for (const production of this.grammar.productions) {
-      for (let index = 0; index <= production.right.length; index++) {
-        const symbol = production.right[index];
+    const followsQueue: NonTerminal[] = [nonTerminal];
+    const processedFollows = new Set<NonTerminal>([nonTerminal]);
 
-        if (symbol !== nonTerminal) {
-          continue;
-        }
+    for (const followTarget of followsQueue) {
+      if (followTarget === this.firstProduction.left) {
+        follow.add(END_MARKER);
+        continue;
+      }
 
-        const postWord = production.right.slice(index + 1);
-        const postFirst = this.first(postWord);
+      for (const production of this.grammar.productions) {
+        production.right.forEach((symbol, index) => {
+          if (symbol !== followTarget) {
+            return;
+          }
 
-        if (postFirst.size === 0 || postFirst.has(EPSILON)) {
-          follow = new Set([...follow, ...this.follow(production.left)]);
-          continue;
-        }
+          const postWord = production.right.slice(index + 1);
+          const postFirst = this.first(postWord);
 
-        follow = new Set([...follow, ...postFirst]);
+          if (!processedFollows.has(symbol) && (postFirst.size === 0 || postFirst.has(EPSILON))) {
+            followsQueue.push(symbol);
+          }
+
+          follow = new Set([...follow, ...postFirst]);
+        })
       }
     }
 
