@@ -3,6 +3,7 @@ import { Automaton } from "./automata/automaton";
 import IdentifierAutomaton from "./automata/identifier-automaton";
 import MonoSymbolAutomaton from "./automata/monosymbol-automaton";
 import NumberAutomaton from "./automata/number-automaton";
+import WordAutomaton from "./automata/word-automaton";
 
 /**
  * Lexer class responsible for tokenizing input strings based on a set of
@@ -45,7 +46,10 @@ export default class Lexer {
     new MonoSymbolAutomaton("=", "EQUAL"),
     new MonoSymbolAutomaton(",", "COMMA"),
     new MonoSymbolAutomaton(" ", "SPACE"),
-  ];
+    new WordAutomaton(">=", "GREATER_EQUAL"),
+    new WordAutomaton("<=", "LESSER_EQUAL"),
+    new WordAutomaton("!=", "DIFFERENT"),
+   ];
 
   /***
    * Splits the input string into tokens, ignoring spaces.

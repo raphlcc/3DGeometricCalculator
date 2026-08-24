@@ -1,8 +1,10 @@
 export enum StatesEnum {
   START,
+  INTERMEDIATE,
   FINISH,
   IDENTIFIER,
   INTEGER,
   FLOAT,
   SYMBOL,
+  GARBAGE,
 }

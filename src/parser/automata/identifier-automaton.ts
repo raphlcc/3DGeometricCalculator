@@ -38,17 +38,20 @@ export default class IdentifierAutomaton extends Automaton {
    * @return void
    */
   protected applyTransitions(char: string): void {
-    if (this.state === StatesEnum.START && ALPHABET.includes(char)) {
-      this.state = StatesEnum.IDENTIFIER;
-    }
-
-    if (
-      this.state === StatesEnum.IDENTIFIER &&
-      (DIGITS.includes(char) || ALPHABET.includes(char))
-    ) {
+    if (this.state === StatesEnum.GARBAGE) {
       return;
     }
 
-    this.state = StatesEnum.FINISH;
+    if (this.state === StatesEnum.START) {
+      this.state = (ALPHABET.includes(char))? StatesEnum.FINISH : StatesEnum.GARBAGE;
+      return;
+    }
+
+    if (ALPHABET.includes(char) || DIGITS.includes(char)) {
+      this.state = StatesEnum.FINISH;
+      return;
+    }
+
+    this.state = StatesEnum.GARBAGE;
   }
 }
