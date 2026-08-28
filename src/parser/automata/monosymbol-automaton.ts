@@ -43,11 +43,15 @@ export default class MonoSymbolAutomata extends Automaton {
    * @return void
    */
   protected applyTransitions(char: string): void {
-    if (this.state === StatesEnum.SYMBOL || char !== this.symbol) {
+    if (
+      this.state !== StatesEnum.GARBAGE 
+      && this.state !== StatesEnum.FINISH 
+      && char === this.symbol
+    ) {
       this.state = StatesEnum.FINISH;
       return;
     }
 
-    this.state = StatesEnum.SYMBOL;
+    this.state = StatesEnum.GARBAGE;
   }
 }

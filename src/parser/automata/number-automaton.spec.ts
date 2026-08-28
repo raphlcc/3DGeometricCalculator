@@ -83,6 +83,6 @@ describe("NumberAutomaton", () => {
 
     const token = automaton.recognize("1.");
 
-    expect(token.substring).toBe("1.");
+    expect(token.substring).toBe("1");
   });
 });

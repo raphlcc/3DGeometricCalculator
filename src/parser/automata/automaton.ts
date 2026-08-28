@@ -33,21 +33,22 @@ export abstract class Automaton {
    * @return Token containing the token name, recognized substring, and its size
    */
   recognize(word: string): Token {
-    let size = 0;
+    let lastFinishReached = 0;
 
-    for (const char of word) {
+    for (let currCharIndex = 0; currCharIndex <= word.length; currCharIndex++) {
+      const char = word[currCharIndex];
+
       this.applyTransitions(char);
-      if (this.state === StatesEnum.FINISH) {
-        break;
-      }
 
-      size++;
+      if (this.state === StatesEnum.FINISH) {
+        lastFinishReached = currCharIndex + 1;
+      }
     }
 
     this.state = StatesEnum.START;
 
-    const substring = word.slice(0, size);
-    return { name: this.tokenName, substring, size };
+    const substring = word.slice(0, lastFinishReached);
+    return { name: this.tokenName, substring, size: lastFinishReached};
   }
   /**
    * Applies the transition function of the automaton for the given character,

@@ -1,5 +1,5 @@
 import { StatesEnum } from "./states.enum";
-import { DIGITS } from "./constants";
+import { ALPHABET, DIGITS } from "./constants";
 import { Automaton } from "./automaton";
 
 /**
@@ -39,23 +39,21 @@ export default class NumberAutomaton extends Automaton {
    * @return void
    */
   protected applyTransitions(char: string): void {
-    if (this.state === StatesEnum.START && DIGITS.includes(char)) {
-      this.state = StatesEnum.INTEGER;
+    if (this.state === StatesEnum.GARBAGE) {
       return;
     }
 
-    if (this.state === StatesEnum.INTEGER && char === ".") {
+    if (DIGITS.includes(char)) {
+      this.state = StatesEnum.FINISH;
+      return;
+    }
+
+    if (char === '.') {
       this.state = StatesEnum.FLOAT;
       return;
     }
 
-    if (
-      (this.state === StatesEnum.FLOAT || this.state === StatesEnum.INTEGER) &&
-      DIGITS.includes(char)
-    ) {
-      return;
-    }
+    this.state = StatesEnum.GARBAGE;
 
-    this.state = StatesEnum.FINISH;
   }
 }
