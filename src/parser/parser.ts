@@ -76,7 +76,7 @@ class Parser {
 
     do {
       const token = tokens[0];
-      const top = this.stack.pop();
+      const top = this.stack[this.stack.length - 1];
 
       currAction = this.actions.get(`${top?.state}#${token?.name}`);
 
@@ -104,8 +104,11 @@ class Parser {
         );
         const mathObjects = removedStates.map((stackNode) => stackNode.value);
         const astNode = currAction.production.reduce(mathObjects);
+
+        const newTop = this.stack[this.stack.length - 1];
+
         const newStateId = this.goto.get(
-          `${top?.state}#${currAction.production.left.name}`,
+          `${newTop?.state}#${currAction.production.left.name}`,
         );
 
         const stackNode: StackNode = {
@@ -138,7 +141,7 @@ class Parser {
       for (const item of state.items) {
         if (
           item.production === this.firstProduction &&
-          item.dotPosition === 1
+          !item.production.right[item.dotPosition]
         ) {
           const action: Accept = { kind: "accept" };
           this.actions.set(`${state.id}#${END_MARKER.name}`, action);
@@ -193,14 +196,18 @@ class Parser {
       },
     ];
 
-    const itemStack = [...canonicalSetsAutomaton];
+    const stateStack = [...canonicalSetsAutomaton];
 
-    while (itemStack.length > 0) {
-      const state = itemStack.pop()!;
+    for (const state of stateStack) {
       for (const symbol of this.grammar.symbols) {
         const gotoResult = this.gotoFunc(state.items, symbol);
 
-        if (this.alreadyInSet(canonicalSetsAutomaton, gotoResult)) continue;
+        const foundState = this.findState(canonicalSetsAutomaton, gotoResult);
+ 
+        if (foundState) {
+          state.goto.set(symbol, foundState.id);
+          continue;
+        }
 
         const newState: State = {
           id: canonicalSetsAutomaton.length,
@@ -211,21 +218,21 @@ class Parser {
         state.goto.set(symbol, canonicalSetsAutomaton.length);
 
         canonicalSetsAutomaton.push(newState);
-        itemStack.push(newState);
+        stateStack.push(newState);
       }
     }
 
     return canonicalSetsAutomaton;
   }
 
-  private alreadyInSet(canonicalSet: State[], newSet: Item[]): boolean {
+  private findState(canonicalSet: State[], newState: Item[]): State | null {
     for (const existingState of canonicalSet) {
-      if (existingState.items.length !== newSet.length) {
+      if (existingState.items.length !== newState.length) {
         continue;
       }
 
       const areDifferentSets = existingState.items.some((item) => {
-        const isIn = newSet.some(
+        const isIn = newState.some(
           (item2) =>
             item.production === item2.production &&
             item.dotPosition === item2.dotPosition,
@@ -234,10 +241,10 @@ class Parser {
       });
 
       if (!areDifferentSets) {
-        return true;
+        return existingState;
       }
     }
-    return false;
+    return null;
   }
 
   private gotoFunc(items: Item[], symbol: Symbol): Item[] {
@@ -262,8 +269,7 @@ class Parser {
     const closureSet = items;
     const itemsStack = [...items];
 
-    while (itemsStack.length > 0) {
-      const item = itemsStack.pop()!;
+    for (const item of itemsStack) {
       const symbolAfterDot = item.production.right[item.dotPosition];
 
       if (
@@ -275,21 +281,18 @@ class Parser {
       }
 
       for (const production of symbolAfterDot.produtions) {
+        if (
+          closureSet.find(item => item.production === production && item.dotPosition === 0)
+        ) {
+          continue;
+        }
+
         const newItem: Item = {
           production,
           dotPosition: 0,
         };
-
-        const notInSet = !closureSet.find(
-          (item) =>
-            item.production === newItem.production &&
-            item.dotPosition === newItem.dotPosition,
-        );
-
-        if (notInSet) {
-          closureSet.push(newItem);
-          itemsStack.push(newItem);
-        }
+        closureSet.push(newItem);
+        itemsStack.push(newItem);  
       }
     }
     return closureSet;
@@ -302,7 +305,7 @@ class Parser {
     const processedFollows = new Set<NonTerminal>([nonTerminal]);
 
     for (const followTarget of followsQueue) {
-      if (followTarget === this.firstProduction.left) {
+      if (followTarget === this.grammar.startSymbol) {
         follow.add(END_MARKER);
         continue;
       }
@@ -313,14 +316,15 @@ class Parser {
             return;
           }
 
-          const postWord = production.right.slice(index + 1);
-          const postFirst = this.first(postWord);
+          const wordAfterTarget = production.right.slice(index + 1);
+          const first = this.first(wordAfterTarget);
 
-          if (!processedFollows.has(symbol) && (postFirst.size === 0 || postFirst.has(EPSILON))) {
-            followsQueue.push(symbol);
+          if (!processedFollows.has(production.left) && (first.size === 0 || first.has(EPSILON))) {
+            followsQueue.push(production.left);
+            processedFollows.add(production.left);
           }
 
-          follow = new Set([...follow, ...postFirst]);
+          follow = follow.union(first);
         })
       }
     }

@@ -68,7 +68,7 @@ const FuncDecl: NonTerminal = {
 
 const Name: NonTerminal = {
   kind: "non-terminal",
-  name: "func-name",
+  name: "name",
 };
 
 const VarList: NonTerminal = {
@@ -123,17 +123,17 @@ const CallFunctionExpression: NonTerminal = {
 
 const ID: Terminal = {
   kind: "terminal",
-  name: "id",
+  name: "IDENTIFIER",
 };
 
 const NUMBER: Terminal = {
   kind: "terminal",
-  name: "number",
+  name: "NUMBER",
 };
 
 const PLUS: Terminal = {
   kind: "terminal",
-  name: "plus",
+  name: "PLUS",
 };
 
 const MINUS: Terminal = {
@@ -143,7 +143,7 @@ const MINUS: Terminal = {
 
 const TIMES: Terminal = {
   kind: "terminal",
-  name: "times",
+  name: "TIMES",
 };
 
 const SLASH: Terminal = {
@@ -178,7 +178,7 @@ const GREATER_THAN: Terminal = {
 
 const LESS_EQUAL: Terminal = {
   kind: "terminal",
-  name: "lequal",
+  name: "LESSER_EQUAL",
 };
 
 const GREATER_EQUAL: Terminal = {
@@ -188,12 +188,12 @@ const GREATER_EQUAL: Terminal = {
 
 const L_PAREN: Terminal = {
   kind: "terminal",
-  name: "l-paren",
+  name: "L_PAREN",
 };
 
 const R_PAREN: Terminal = {
   kind: "terminal",
-  name: "r-paren",
+  name: "R_PAREN",
 };
 
 const UNDERLINE: Terminal = {
@@ -266,79 +266,73 @@ export default class Grammar {
       {
         left: Constraint,
         right: [Expression, EQUAL, Expression],
-        reduce: (items) =>
-          new ConstraintType(
-            items[0] as ExpressionType,
-            "=",
-            items[2] as ExpressionType,
-          ),
+        reduce: (items) => {
+          console.log(items);
+          return items.join(' ');
+        }
       },
       // <constraint> ::= <expr> != <expr>
       {
         left: Constraint,
         right: [Expression, DIFFERENT, Expression],
-        reduce: (items) =>
-          new ConstraintType(
-            items[0] as ExpressionType,
-            "!=",
-            items[2] as ExpressionType,
-          ),
+        reduce: (items) => {
+          console.log(items);
+          return items.join(' ');
+        }
       },
       // <constraint> ::= <expr> < <expr>
       {
         left: Constraint,
         right: [Expression, LESS_THAN, Expression],
-        reduce: (items) =>
-          new ConstraintType(
-            items[0] as ExpressionType,
-            "<",
-            items[2] as ExpressionType,
-          ),
+        reduce: (items) => {
+          console.log(items);
+          return items.join(' ');
+        }
       },
       // <constraint> ::= <expr> <= <expr>
       {
         left: Constraint,
         right: [Expression, LESS_EQUAL, Expression],
-        reduce: (items) =>
-          new ConstraintType(
-            items[0] as ExpressionType,
-            "<=",
-            items[2] as ExpressionType,
-          ),
+        reduce: (items) => {
+          console.log(items);
+          return items.join(' ');
+        }
       },
       // <constraint> ::= <expr> > <expr>
       {
         left: Constraint,
         right: [Expression, GREATER_THAN, Expression],
-        reduce: (items) =>
-          new ConstraintType(
-            items[0] as ExpressionType,
-            ">",
-            items[2] as ExpressionType,
-          ),
+        reduce: (items) => {
+          console.log(items);
+          return items.join(' ');
+        }
       },
       // <constraint> ::= <expr> >= <expr>
       {
         left: Constraint,
         right: [Expression, GREATER_EQUAL, Expression],
-        reduce: (items) =>
-          new ConstraintType(
-            items[0] as ExpressionType,
-            ">=",
-            items[2] as ExpressionType,
-          ),
+        reduce: (items) => {
+          console.log(items);
+          return items.join(' ');
+        }
       },
       // <function> ::= <func_decl> = <expr>
       {
         left: Function,
         right: [FuncDecl, EQUAL, Expression],
-        reduce: (items) => {},
+        reduce: (items) => {
+          console.log(items);
+          return items.join(' ');
+        }
       },
       // <func_decl> ::= <name> ( <var_list> )
       {
         left: FuncDecl,
         right: [Name, L_PAREN, VarList, R_PAREN],
-        reduce: () => {},
+        reduce: (items) => {
+          console.log(items);
+          return items.join(' ');
+        }
       },
       // <name> ::= ID | ID_ID | ID_NUMBER
       { left: Name, right: [ID], reduce: () => {} },
@@ -394,6 +388,19 @@ export default class Grammar {
         reduce: () => {},
       },
     ];
+
+    for (let production of this.productions) {
+      production.reduce = (items) => {
+        if (typeof items[0] === 'object') {
+          //console.log(Object.entries(items[0]))
+        }
+
+        const itemsStr = items.map(item => typeof item === 'string'? item : ` ${item.substring || item.name || item}`);
+
+        console.log('items: ', itemsStr);
+        return itemsStr.join(' ');
+      }
+    }
 
     for (const symbol of this.symbols) {
       if (symbol.kind === "terminal") {
